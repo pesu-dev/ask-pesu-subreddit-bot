@@ -34,9 +34,8 @@ def run(interval: int, n: int) -> None:
                 and answer != "I'm sorry, I don't have that information."
             ):
                 answer = f"{answer}\n\n---\n*I am a bot, and this action was performed automatically.*"
-                logging.debug(answer)
                 post.reply(answer)
-                logging.info(f"Replied to post: {post.id} - {post.title}")
+                logging.info(f"Replied to post: {post.id} - {post.title}: {answer}")
         except Exception:
             logging.exception(f"Failed to process post: {post.id} - {post.title}")
 
