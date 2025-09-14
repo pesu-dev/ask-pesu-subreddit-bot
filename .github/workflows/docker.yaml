@@ -3,7 +3,7 @@ name: Docker Container Build
 on:
   push:
     branches:
-      - dev
+      - main
 
 jobs:
   build:
@@ -35,3 +35,6 @@ jobs:
 
       - name: Stop container
         run: docker stop ask-pesu-subreddit-bot
+
+      - name: Remove container
+        run: docker rm ask-pesu-subreddit-bot

@@ -2,7 +2,10 @@ name: Enforce PR Origin Policy
 
 on:
   pull_request:
-    types: [ opened, reopened, synchronize ]
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 jobs:
   validate-pr-origin:
@@ -38,9 +41,9 @@ jobs:
             exit 1
           fi
 
-          # PRs must target the 'dev' branch only
-          if [ "$TARGET_BRANCH" != "dev" ]; then
-            echo "❌ PR must target the 'dev' branch only. PRs to 'main' are not allowed."
+          # PRs must target the 'main' branch only
+          if [ "$TARGET_BRANCH" != "main" ]; then
+            echo "❌ PR must target the 'main' branch only. PRs to 'dev' are not allowed."
             exit 1
           fi
 
