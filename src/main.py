@@ -2,6 +2,7 @@
 
 import datetime
 import logging
+import time
 
 import yaml
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -72,4 +73,13 @@ if __name__ == "__main__":
     )
 
     # Start the scheduler
+    logging.info("Starting the scheduler...")
     scheduler.start()
+
+    # Set up a foreground process to indicate the PID is active
+    try:
+        while True:
+            time.sleep(600)
+    except (KeyboardInterrupt, SystemExit):
+        logging.info("Shutting down the scheduler...")
+        scheduler.shutdown()
