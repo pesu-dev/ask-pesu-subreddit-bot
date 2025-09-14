@@ -59,13 +59,23 @@ class RedditClient:
             dict[str, Any]: The JSON response from the AskPESU API.
         """
         query = f"{post.title}\n\n{post.selftext or ''}".strip()
-        query = f"Use the following context to answer the question below in detail. " \
-                f"If the context is irrelevant, do not answer the query.\n\n{query}"
+        base_url = os.getenv("ASK_PESU_URL")
         try:
-            with httpx.Client(timeout=60) as client:
-                response = client.post(f"{os.getenv('ASK_PESU_URL')}/ask", json={"query": query})
-                response.raise_for_status()
-                return response.json()
+            with httpx.Client(timeout=120) as client:
+                quota = client.get(f"{base_url}/quota").json()["quota"]
+                # Prefer thinking model if available
+                if quota["thinking"]["available"]:
+                    ask_resp = client.post(f"{base_url}/ask", json={"query": query, "thinking": True})
+                # Check if primary model is available
+                elif quota["primary"]["available"]:
+                    ask_resp = client.post(f"{base_url}/ask", json={"query": query, "thinking": False})
+                else:
+                    logging.warning(f"No models available to answer post {post.id}")
+                    return {"status": False}
+
+                ask_resp.raise_for_status()
+                return ask_resp.json()
+
         except httpx.HTTPError:
             logging.exception(f"Failed to query AskPESU API for post {post.id}")
             return {"status": False}

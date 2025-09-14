@@ -1,0 +1,37 @@
+name: Docker Container Build
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get short commit hash
+        id: vars
+        run: echo "tag=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Build the Docker image
+        run: docker build . --tag ask-pesu-subreddit-bot
+
+      - name: Run container (background bot)
+        run: |
+          docker run --name ask-pesu-subreddit-bot -d \
+            -e CLIENT_ID="${{ secrets.REDDIT_CLIENT_ID }}" \
+            -e CLIENT_SECRET="${{ secrets.REDDIT_CLIENT_SECRET }}" \
+            -e REDDIT_USERNAME="${{ secrets.REDDIT_USERNAME }}" \
+            -e REDDIT_PASSWORD="${{ secrets.REDDIT_PASSWORD }}" \
+            -e ASK_PESU_URL="${{ secrets.ASK_PESU_URL }}" \
+            ask-pesu-subreddit-bot
+
+      - name: Verify container logs
+        run: |
+          sleep 10
+          docker logs ask-pesu-subreddit-bot | tail -n 10
+
+      - name: Stop container
+        run: docker stop ask-pesu-subreddit-bot
