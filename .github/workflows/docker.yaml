@@ -20,7 +20,7 @@ jobs:
 
       - name: Run container (background bot)
         run: |
-          docker run --name ask-pesu-subreddit-bot -d \
+          docker run --name ask-pesu-subreddit-bot -d -p 7860:7860 \
             -e CLIENT_ID="${{ secrets.REDDIT_CLIENT_ID }}" \
             -e CLIENT_SECRET="${{ secrets.REDDIT_CLIENT_SECRET }}" \
             -e REDDIT_USERNAME="${{ secrets.REDDIT_USERNAME }}" \
