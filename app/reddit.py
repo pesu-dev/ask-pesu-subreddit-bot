@@ -21,6 +21,7 @@ class RedditClient:
             username=os.getenv("REDDIT_USERNAME"),
             password=os.getenv("REDDIT_PASSWORD"),
             user_agent="pesudevbot",
+            request_timeout=30,
         )
         self.subreddit = self.reddit.subreddit("PESU")
 
@@ -79,3 +80,32 @@ class RedditClient:
         except httpx.HTTPError:
             logging.exception(f"Failed to query AskPESU API for post {post.id}")
             return {"status": False}
+
+    def run(self, interval: int, n: int) -> None:
+        """Main job function to fetch and process new posts.
+
+        Args:
+            interval (int): Time window in minutes to look back for new posts.
+            n (int): Number of posts to fetch.
+
+        Returns:
+            None
+        """
+        # Fetch all the new posts in the last interval minutes
+        new_posts = self.fetch_latest_posts(interval, n)
+        logging.info(f"Fetched {len(new_posts)} new posts.")
+        for post in new_posts:
+            try:
+                # Query the AskPESU API with the post's title and content
+                response = self.query_ask_pesu(post)
+                # Respond with an answer only if the response is valid and not the default fallback answer
+                if (
+                    response["status"]
+                    and (answer := response.get("answer"))
+                    and answer != "I'm sorry, I don't have that information."
+                ):
+                    answer = f"{answer}\n\n---\n*I am a bot, and this action was performed automatically.*"
+                    post.reply(answer)
+                    logging.info(f"Replied to post: {post.id} - {post.title}: {answer}")
+            except Exception:
+                logging.exception(f"Failed to process post: {post.id} - {post.title}")

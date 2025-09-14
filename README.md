@@ -6,7 +6,8 @@ colorFrom: yellow
 colorTo: red
 sdk: docker
 python_version: 3.12
-app_file: src/main.py
+app_file: app/app.py
+app_port: 7860
 fullWidth: true
 header: mini
 pinned: false
@@ -18,4 +19,6 @@ tags:
 - assistant
 - question answering
 - pes university
+- reddit
+- bot
 ---

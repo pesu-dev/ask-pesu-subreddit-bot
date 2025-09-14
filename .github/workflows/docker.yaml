@@ -20,7 +20,7 @@ jobs:
 
       - name: Run container (background bot)
         run: |
-          docker run --name ask-pesu-subreddit-bot -d \
+          docker run --name ask-pesu-subreddit-bot -d -p 7860:7860 \
             -e CLIENT_ID="${{ secrets.REDDIT_CLIENT_ID }}" \
             -e CLIENT_SECRET="${{ secrets.REDDIT_CLIENT_SECRET }}" \
             -e REDDIT_USERNAME="${{ secrets.REDDIT_USERNAME }}" \
@@ -28,10 +28,18 @@ jobs:
             -e ASK_PESU_URL="${{ secrets.ASK_PESU_URL }}" \
             ask-pesu-subreddit-bot
 
-      - name: Verify container logs
+      - name: Wait for the container to be ready
         run: |
-          sleep 10
-          docker logs ask-pesu-subreddit-bot | tail -n 10
+          for i in {1..60}; do
+            if curl --silent http://localhost:7860/health > /dev/null; then
+              echo "✅ Service is up!"
+              exit 0
+            fi
+            echo "⏳ Waiting for service..."
+            sleep 15
+          done
+          echo "❌ Service did not start in time."
+          exit 1
 
       - name: Stop container
         run: docker stop ask-pesu-subreddit-bot
